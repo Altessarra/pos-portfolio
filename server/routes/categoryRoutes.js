@@ -5,13 +5,12 @@ import {
   updateCategory,
   archiveCategory
 } from '../controllers/categoryController.js';
-import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', protect, getCategories);
-router.post('/', protect, authorize('admin', 'manager'), createCategory);
-router.put('/:id', protect, authorize('admin', 'manager'), updateCategory);
-router.delete('/:id', protect, authorize('admin', 'manager'), archiveCategory);
+router.get('/', getCategories);
+router.post('/', createCategory);
+router.put('/:id', updateCategory);
+router.delete('/:id', archiveCategory);
 
 export default router;

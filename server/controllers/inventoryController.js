@@ -1,15 +1,17 @@
-import pool from '../config/db.js';
+import db from '../config/db.js';
+
+const portfolioOperator = 'Portfolio Demo';
 
 export const getInventory = async (req, res, next) => {
   try {
-    const { rows } = await pool.query(`
+    const products = db.prepare(`
       SELECT p.*, c.name AS category_name
       FROM products p
       LEFT JOIN categories c ON c.id = p.category_id
-      WHERE p.is_active = TRUE
+      WHERE p.is_active = 1
       ORDER BY p.stock ASC, p.name ASC
-    `);
-    res.json(rows);
+    `).all();
+    res.json(products);
   } catch (error) {
     next(error);
   }
@@ -17,15 +19,14 @@ export const getInventory = async (req, res, next) => {
 
 export const getInventoryLogs = async (req, res, next) => {
   try {
-    const { rows } = await pool.query(`
-      SELECT il.*, p.name AS product_name, u.name AS user_name
+    const logs = db.prepare(`
+      SELECT il.*, p.name AS product_name
       FROM inventory_logs il
       LEFT JOIN products p ON p.id = il.product_id
-      LEFT JOIN users u ON u.id = il.user_id
-      ORDER BY il.created_at DESC
+      ORDER BY il.created_at DESC, il.id DESC
       LIMIT 300
-    `);
-    res.json(rows);
+    `).all();
+    res.json(logs.map(log => ({ ...log, user_name: portfolioOperator })));
   } catch (error) {
     next(error);
   }

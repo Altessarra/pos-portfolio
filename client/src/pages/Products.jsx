@@ -88,7 +88,7 @@ export default function Products() {
         action={<button onClick={openCreate} className="btn-primary"><Plus size={18} /> Add Product</button>}
       />
 
-      <div className="card mb-5 grid gap-3 p-4 md:grid-cols-[1fr_220px_auto]">
+      <div className="motion-card card mb-5 grid gap-3 p-4 md:grid-cols-[1fr_220px_auto]">
         <div className="relative">
           <Search className="absolute left-3 top-3.5 text-slate-400" size={18} />
           <input
@@ -112,7 +112,7 @@ export default function Products() {
         <button onClick={load} className="btn-secondary">Search</button>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="motion-card card overflow-hidden">
         <table className="w-full min-w-[900px]">
           <thead className="bg-slate-50">
             <tr>
@@ -126,7 +126,7 @@ export default function Products() {
           </thead>
           <tbody>
             {products.map(product => (
-              <tr key={product.id}>
+              <tr key={product.id} className="motion-row">
                 <td className="table-td">
                   <div className="flex items-center gap-3">
                     <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-slate-200">

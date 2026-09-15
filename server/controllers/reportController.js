@@ -1,43 +1,48 @@
-import pool from '../config/db.js';
+import db from '../config/db.js';
+
+const numberize = (rows, numericFields) => rows.map(row => ({
+  ...row,
+  ...Object.fromEntries(numericFields.map(field => [field, Number(row[field])]))
+}));
 
 export const getReports = async (req, res, next) => {
   try {
-    const dailySales = await pool.query(`
-      SELECT created_at::date AS date, SUM(total)::numeric AS total, COUNT(*)::int AS orders
+    const dailySales = db.prepare(`
+      SELECT DATE(created_at) AS date, SUM(total) AS total, COUNT(*) AS orders
       FROM sales
-      WHERE created_at >= CURRENT_DATE - INTERVAL '14 days'
-      GROUP BY created_at::date
+      WHERE DATE(created_at) >= DATE('now', '-14 days')
+      GROUP BY DATE(created_at)
       ORDER BY date ASC
-    `);
+    `).all();
 
-    const monthlySales = await pool.query(`
-      SELECT TO_CHAR(created_at, 'YYYY-MM') AS month, SUM(total)::numeric AS total, COUNT(*)::int AS orders
+    const monthlySales = db.prepare(`
+      SELECT strftime('%Y-%m', created_at) AS month, SUM(total) AS total, COUNT(*) AS orders
       FROM sales
-      WHERE created_at >= CURRENT_DATE - INTERVAL '12 months'
-      GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+      WHERE DATE(created_at) >= DATE('now', '-12 months')
+      GROUP BY strftime('%Y-%m', created_at)
       ORDER BY month ASC
-    `);
+    `).all();
 
-    const topProducts = await pool.query(`
-      SELECT product_name AS name, SUM(quantity)::int AS quantity, SUM(total)::numeric AS total
+    const topProducts = db.prepare(`
+      SELECT product_name AS name, SUM(quantity) AS quantity, SUM(total) AS total
       FROM sale_items
       GROUP BY product_name
       ORDER BY quantity DESC
       LIMIT 10
-    `);
+    `).all();
 
-    const paymentSummary = await pool.query(`
-      SELECT payment_method, SUM(total)::numeric AS total, COUNT(*)::int AS orders
+    const paymentSummary = db.prepare(`
+      SELECT payment_method, SUM(total) AS total, COUNT(*) AS orders
       FROM sales
       GROUP BY payment_method
       ORDER BY total DESC
-    `);
+    `).all();
 
     res.json({
-      dailySales: dailySales.rows,
-      monthlySales: monthlySales.rows,
-      topProducts: topProducts.rows,
-      paymentSummary: paymentSummary.rows
+      dailySales: numberize(dailySales, ['total', 'orders']),
+      monthlySales: numberize(monthlySales, ['total', 'orders']),
+      topProducts: numberize(topProducts, ['quantity', 'total']),
+      paymentSummary: numberize(paymentSummary, ['total', 'orders'])
     });
   } catch (error) {
     next(error);

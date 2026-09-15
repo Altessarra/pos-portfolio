@@ -20,7 +20,7 @@ export default function Inventory() {
       <PageHeader title="Inventory" subtitle="Monitor product stock and inventory movement logs." />
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <div className="card overflow-hidden">
+        <div className="motion-card card overflow-hidden">
           <div className="border-b border-slate-200 p-5">
             <h3 className="font-black text-slate-950">Current Stock</h3>
           </div>
@@ -35,7 +35,7 @@ export default function Inventory() {
             </thead>
             <tbody>
               {products.map(product => (
-                <tr key={product.id}>
+                <tr key={product.id} className="motion-row">
                   <td className="table-td font-semibold">{product.name}</td>
                   <td className="table-td">{product.category_name}</td>
                   <td className="table-td">{product.stock}</td>
@@ -46,7 +46,7 @@ export default function Inventory() {
           </table>
         </div>
 
-        <div className="card overflow-hidden">
+        <div className="motion-card card overflow-hidden">
           <div className="border-b border-slate-200 p-5">
             <h3 className="font-black text-slate-950">Inventory Logs</h3>
           </div>
@@ -63,7 +63,7 @@ export default function Inventory() {
               </thead>
               <tbody>
                 {logs.map(log => (
-                  <tr key={log.id}>
+                  <tr key={log.id} className="motion-row">
                     <td className="table-td">{dateTime(log.created_at)}</td>
                     <td className="table-td font-semibold">{log.product_name}</td>
                     <td className="table-td">{log.type}</td>

@@ -1,11 +1,11 @@
-import pool from '../config/db.js';
+import db from '../config/db.js';
 
 export const getCategories = async (req, res, next) => {
   try {
-    const { rows } = await pool.query(
-      'SELECT * FROM categories WHERE is_active = TRUE ORDER BY name ASC'
-    );
-    res.json(rows);
+    const categories = db.prepare(
+      'SELECT * FROM categories WHERE is_active = 1 ORDER BY name ASC'
+    ).all();
+    res.json(categories);
   } catch (error) {
     next(error);
   }
@@ -14,13 +14,11 @@ export const getCategories = async (req, res, next) => {
 export const createCategory = async (req, res, next) => {
   try {
     const { name, description } = req.body;
-    const { rows } = await pool.query(
-      `INSERT INTO categories (name, description)
-       VALUES ($1, $2)
-       RETURNING *`,
-      [name, description || null]
-    );
-    res.status(201).json(rows[0]);
+    const result = db.prepare(
+      'INSERT INTO categories (name, description) VALUES (?, ?)'
+    ).run(name, description || null);
+    const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(result.lastInsertRowid);
+    res.status(201).json(category);
   } catch (error) {
     next(error);
   }
@@ -29,14 +27,13 @@ export const createCategory = async (req, res, next) => {
 export const updateCategory = async (req, res, next) => {
   try {
     const { name, description } = req.body;
-    const { rows } = await pool.query(
-      `UPDATE categories
-       SET name = $1, description = $2, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $3
-       RETURNING *`,
-      [name, description || null, req.params.id]
-    );
-    res.json(rows[0]);
+    db.prepare(`
+      UPDATE categories
+      SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(name, description || null, req.params.id);
+    const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+    res.json(category);
   } catch (error) {
     next(error);
   }
@@ -44,10 +41,9 @@ export const updateCategory = async (req, res, next) => {
 
 export const archiveCategory = async (req, res, next) => {
   try {
-    await pool.query(
-      `UPDATE categories SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
-      [req.params.id]
-    );
+    db.prepare(`
+      UPDATE categories SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).run(req.params.id);
     res.json({ message: 'Category archived' });
   } catch (error) {
     next(error);

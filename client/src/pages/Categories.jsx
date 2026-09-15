@@ -58,7 +58,7 @@ export default function Categories() {
         action={<button onClick={openCreate} className="btn-primary"><Plus size={18} /> Add Category</button>}
       />
 
-      <div className="card overflow-hidden">
+      <div className="motion-card card overflow-hidden">
         <table className="w-full">
           <thead className="bg-slate-50">
             <tr>
@@ -69,7 +69,7 @@ export default function Categories() {
           </thead>
           <tbody>
             {categories.map(category => (
-              <tr key={category.id}>
+              <tr key={category.id} className="motion-row">
                 <td className="table-td font-semibold">{category.name}</td>
                 <td className="table-td">{category.description || '-'}</td>
                 <td className="table-td">

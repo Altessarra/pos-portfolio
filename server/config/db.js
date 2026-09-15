@@ -1,39 +1,23 @@
-import dotenv from 'dotenv';
+import Database from 'better-sqlite3';
+import { mkdirSync, readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pg from 'pg';
-
-const { Pool } = pg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const databasePath = process.env.SQLITE_PATH || path.resolve(__dirname, '../data/pos.sqlite');
+const schemaPath = path.resolve(__dirname, '../../database/schema.sql');
 
-// Force load server/.env
-dotenv.config({
-  path: path.resolve(__dirname, '../.env')
-});
+mkdirSync(path.dirname(databasePath), { recursive: true });
 
-const databaseUrl = process.env.DATABASE_URL;
-const useSsl = process.env.DB_SSL === 'true';
+const db = new Database(databasePath);
 
-console.log('DATABASE_URL loaded:', databaseUrl ? 'YES' : 'NO');
-console.log('DB_SSL:', process.env.DB_SSL);
+db.pragma('foreign_keys = ON');
+db.exec(readFileSync(schemaPath, 'utf8'));
 
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL is missing. Check server/.env spelling and location.');
+const salesColumns = db.pragma('table_info(sales)');
+if (!salesColumns.some(column => column.name === 'cashier_name')) {
+  db.exec("ALTER TABLE sales ADD COLUMN cashier_name TEXT NOT NULL DEFAULT 'Portfolio Demo'");
 }
 
-const pool = new Pool({
-  connectionString: databaseUrl,
-  ssl: useSsl ? { rejectUnauthorized: false } : false
-});
-
-pool.on('connect', () => {
-  console.log('PostgreSQL connected');
-});
-
-pool.on('error', (err) => {
-  console.error('Unexpected PostgreSQL error', err);
-});
-
-export default pool;
+export default db;
