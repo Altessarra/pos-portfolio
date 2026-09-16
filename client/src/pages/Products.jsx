@@ -166,27 +166,51 @@ export default function Products() {
       {modalOpen && (
         <Modal title={editing ? 'Edit Product' : 'Add Product'} onClose={() => setModalOpen(false)}>
           <form onSubmit={save} className="grid gap-4 md:grid-cols-2">
-            <input className="input" placeholder="Product name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
-            <input className="input" placeholder="SKU" value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} required />
-            <select className="input" value={form.category_id} onChange={e => setForm({ ...form, category_id: e.target.value })}>
-              <option value="">Select Category</option>
-              {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
-            </select>
-            <input className="input" type="number" step="0.01" placeholder="Price" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
-            <input className="input" type="number" step="0.01" placeholder="Cost" value={form.cost} onChange={e => setForm({ ...form, cost: e.target.value })} />
-            <input className="input" type="number" placeholder="Stock" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} required />
-            <input className="input" type="number" placeholder="Low stock threshold" value={form.low_stock_threshold} onChange={e => setForm({ ...form, low_stock_threshold: e.target.value })} />
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-xs font-bold text-slate-600">Image URL (optional)</label>
-              <input className="input" placeholder="https://..." value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} />
-            </div>
+            <label className="block space-y-1.5">
+              <span className="field-label">Product name</span>
+              <input id="product-name" className="input" placeholder="e.g. Cafe Latte" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
+            </label>
+            <label className="block space-y-1.5">
+              <span className="field-label">SKU</span>
+              <input id="product-sku" className="input" placeholder="e.g. LAT-001" value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} required />
+            </label>
+            <label className="block space-y-1.5">
+              <span className="field-label">Category</span>
+              <select id="product-category" className="input" value={form.category_id} onChange={e => setForm({ ...form, category_id: e.target.value })}>
+                <option value="">Select Category</option>
+                {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
+              </select>
+            </label>
+            <label className="block space-y-1.5">
+              <span className="field-label">Price</span>
+              <input id="product-price" className="input" type="number" step="0.01" placeholder="0.00" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
+            </label>
+            <label className="block space-y-1.5">
+              <span className="field-label">Cost</span>
+              <input id="product-cost" className="input" type="number" step="0.01" placeholder="0.00" value={form.cost} onChange={e => setForm({ ...form, cost: e.target.value })} />
+            </label>
+            <label className="block space-y-1.5">
+              <span className="field-label">Stock quantity</span>
+              <input id="product-stock" className="input" type="number" placeholder="0" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} required />
+            </label>
+            <label className="block space-y-1.5">
+              <span className="field-label">Low stock threshold</span>
+              <input id="product-threshold" className="input" type="number" placeholder="5" value={form.low_stock_threshold} onChange={e => setForm({ ...form, low_stock_threshold: e.target.value })} />
+            </label>
+            <label className="block space-y-1.5 md:col-span-2">
+              <span className="field-label">Image URL <span className="font-normal text-slate-400">(optional)</span></span>
+              <input id="product-image-url" className="input" placeholder="https://..." value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} />
+            </label>
             <div className="md:col-span-2 flex items-center gap-4">
               <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-slate-200">
                 <ProductImage src={form.image_url} alt="Preview" iconSize={22} />
               </div>
               <p className="text-xs text-slate-500">Live preview of the product image. Leave empty to use the default icon.</p>
             </div>
-            <textarea className="input md:col-span-2" placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+            <label className="block space-y-1.5 md:col-span-2">
+              <span className="field-label">Description <span className="font-normal text-slate-400">(optional)</span></span>
+              <textarea id="product-description" className="input" placeholder="Short description for the product list" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+            </label>
             <div className="md:col-span-2 flex justify-end gap-2">
               <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary">Cancel</button>
               <button className="btn-primary">Save Product</button>

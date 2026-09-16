@@ -88,8 +88,14 @@ export default function Categories() {
       {modalOpen && (
         <Modal title={editing ? 'Edit Category' : 'Add Category'} onClose={() => setModalOpen(false)}>
           <form onSubmit={save} className="space-y-4">
-            <input className="input" placeholder="Category name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
-            <textarea className="input" placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+            <label className="block space-y-1.5">
+              <span className="field-label">Category name</span>
+              <input id="category-name" className="input" placeholder="e.g. Beverages" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
+            </label>
+            <label className="block space-y-1.5">
+              <span className="field-label">Description <span className="font-normal text-slate-400">(optional)</span></span>
+              <textarea id="category-description" className="input" placeholder="What belongs in this category?" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+            </label>
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary">Cancel</button>
               <button className="btn-primary">Save Category</button>
