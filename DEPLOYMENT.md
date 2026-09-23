@@ -1,6 +1,6 @@
 # Deployment Guide
 
-CafePOS is designed as a self-contained portfolio demo. The Express server serves the built React application and stores its data in a local SQLite file.
+Brim POS serves the built React client from the Express server. Product and sales data are stored in Supabase PostgreSQL.
 
 ## Build and start
 
@@ -10,20 +10,16 @@ npm run build
 npm start
 ```
 
-The server listens on port `5000` by default. Set `PORT` only if your host provides a different port.
+The server listens on port `5000` by default. Set `PORT` and `CLIENT_URL` to match the hosting environment.
 
-## Persistent storage
+## Environment
 
-SQLite data is stored at `server/data/pos.sqlite`. A deployment must provide a writable, persistent disk at that location if sales and inventory changes should survive restarts or redeployments.
+Set `DATABASE_URL` on the server to the Supabase PostgreSQL connection string. Keep it in the backend environment; never expose it in a `VITE_*` client variable or commit it to Git.
 
-If the host uses ephemeral storage, the POS still runs, but it resets to the seeded sample catalog whenever that storage is replaced. You can set `SQLITE_PATH` to a different writable persistent path when your host requires it.
+For local development, copy `server/.env.example` to `server/.env`. Production hosts should inject the environment variables directly.
 
-## Health check
+## Database migration
 
-Use the following endpoint for a basic health check:
+The schema is in `database/postgres/001_schema.sql`. The existing SQLite records were copied to the configured Supabase database. Keep the SQLite file as a local backup until you have confirmed the deployed app reads the migrated records.
 
-```text
-/api/health
-```
-
-There are no database credentials, JWT secrets, login accounts, or third-party database services to configure.
+This is a portfolio demo and its API currently has no login or user permissions. Do not use it for real customer or business data without adding access control.

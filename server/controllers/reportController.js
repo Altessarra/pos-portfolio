@@ -1,4 +1,4 @@
-import db from '../config/db.js';
+import { client } from '../config/postgres.js';
 
 const numberize = (rows, numericFields) => rows.map(row => ({
   ...row,
@@ -7,36 +7,29 @@ const numberize = (rows, numericFields) => rows.map(row => ({
 
 export const getReports = async (req, res, next) => {
   try {
-    const dailySales = db.prepare(`
-      SELECT DATE(created_at) AS date, SUM(total) AS total, COUNT(*) AS orders
-      FROM sales
-      WHERE DATE(created_at) >= DATE('now', '-14 days')
-      GROUP BY DATE(created_at)
-      ORDER BY date ASC
-    `).all();
+    const dailySales = await client.unsafe(
+      "SELECT (created_at AT TIME ZONE 'Asia/Manila')::date AS date, SUM(total) AS total, COUNT(*) AS orders " +
+        "FROM sales WHERE (created_at AT TIME ZONE 'Asia/Manila')::date >= " +
+        "((NOW() AT TIME ZONE 'Asia/Manila')::date - INTERVAL '14 days')::date " +
+        "GROUP BY (created_at AT TIME ZONE 'Asia/Manila')::date ORDER BY date ASC"
+    );
 
-    const monthlySales = db.prepare(`
-      SELECT strftime('%Y-%m', created_at) AS month, SUM(total) AS total, COUNT(*) AS orders
-      FROM sales
-      WHERE DATE(created_at) >= DATE('now', '-12 months')
-      GROUP BY strftime('%Y-%m', created_at)
-      ORDER BY month ASC
-    `).all();
+    const monthlySales = await client.unsafe(
+      "SELECT TO_CHAR(DATE_TRUNC('month', created_at AT TIME ZONE 'Asia/Manila'), 'YYYY-MM') AS month, " +
+        'SUM(total) AS total, COUNT(*) AS orders FROM sales ' +
+        "WHERE created_at >= ((DATE_TRUNC('month', NOW() AT TIME ZONE 'Asia/Manila') - INTERVAL '12 months') AT TIME ZONE 'Asia/Manila') " +
+        "GROUP BY DATE_TRUNC('month', created_at AT TIME ZONE 'Asia/Manila') ORDER BY month ASC"
+    );
 
-    const topProducts = db.prepare(`
-      SELECT product_name AS name, SUM(quantity) AS quantity, SUM(total) AS total
-      FROM sale_items
-      GROUP BY product_name
-      ORDER BY quantity DESC
-      LIMIT 10
-    `).all();
+    const topProducts = await client.unsafe(
+      'SELECT product_name AS name, SUM(quantity) AS quantity, SUM(total) AS total ' +
+        'FROM sale_items GROUP BY product_name ORDER BY quantity DESC LIMIT 10'
+    );
 
-    const paymentSummary = db.prepare(`
-      SELECT payment_method, SUM(total) AS total, COUNT(*) AS orders
-      FROM sales
-      GROUP BY payment_method
-      ORDER BY total DESC
-    `).all();
+    const paymentSummary = await client.unsafe(
+      'SELECT payment_method, SUM(total) AS total, COUNT(*) AS orders ' +
+        'FROM sales GROUP BY payment_method ORDER BY total DESC'
+    );
 
     res.json({
       dailySales: numberize(dailySales, ['total', 'orders']),

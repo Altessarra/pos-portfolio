@@ -1,36 +1,35 @@
-# CafePOS Portfolio Demo
+# Brim POS Portfolio Demo
 
-A self-contained point-of-sale portfolio project for a café or small retail store. It runs without accounts, passwords, or external database setup.
-
-## What it includes
-
-- Direct access to dashboard, point of sale, sales history, catalog, inventory, and reports
-- Local SQLite persistence for products, sales, stock updates, and inventory logs
-- Seeded café data on first run
-- Atomic checkout that prevents overselling and updates inventory automatically
+A full-stack café point-of-sale demo. The React client calls an Express API, which stores products, categories, sales, and inventory in Supabase PostgreSQL.
 
 ## Run locally
+
+1. Copy `server/.env.example` to `server/.env`.
+2. Set `DATABASE_URL` to the Supabase PostgreSQL connection string.
+3. Install dependencies and start the app:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the frontend at `http://localhost:5173`. The Express API runs at `http://localhost:5000/api`.
+The client runs at `http://localhost:5173`; the API runs at `http://localhost:5000/api`. The server loads `server/.env` when it starts.
 
-No environment file or database credentials are required.
+## Data
 
-## Local data
+The PostgreSQL schema is in `database/postgres/001_schema.sql`. A one-time importer copies the existing SQLite database into an empty Supabase database, preserving IDs, timestamps, sales, and inventory history:
 
-The server automatically creates `server/data/pos.sqlite` on first start. Your product edits, inventory adjustments, and sales persist in that file across restarts.
+```bash
+npm run import:sqlite --workspace=server
+```
 
-To keep a separate local data file, start the server with `SQLITE_PATH` set to an absolute file path. To reset the demo, stop the server and delete `server/data/pos.sqlite`; the next server start recreates the seeded database.
+The importer stops if the target tables already exist. The local SQLite file remains in `server/data/pos.sqlite` as the source copy. Set `SQLITE_PATH` if the source file is stored elsewhere.
 
-## Test and build
+## Checks
 
 ```bash
 npm test
 npm run build
 ```
 
-The test suite covers SQLite initialization, public API access, checkout stock changes, and the login-route redirect. The production build is written to `client/dist`.
+The server tests use `DATABASE_URL` to create temporary isolated schemas, then drop them. They do not use the imported `public` tables.
